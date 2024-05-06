@@ -1,48 +1,65 @@
-// routes/productRoutes.js
 const express = require("express");
 const router = express.Router();
-const Product = require("../models/Product"); // Adjust the path as necessary
+const Product = require("../models/Product");
+
+function transformProductWithSymbols(product) {
+  const { symbols, ...rest } = product.toObject();
+
+  const formattedSymbols = symbols.map((symbolRef) => ({
+    symbol: symbolRef.symbolId,
+    position: symbolRef.position,
+  }));
+
+  return { ...rest, symbols: formattedSymbols };
+}
 
 // POST endpoint for creating a product
 router.post("/product", async (req, res) => {
   try {
-    const shirt = req.body.shirtId;
-    const symbols = req.body.droppedSymbols.map(symbol => {
-      return {symbolId: symbol._id, position: symbol.position}
-    })
-    const textOnPlate = req.body.textOnPlate;
-    const dateOnPlate = req.body.dateOnPlate;
-    const price = req.body.price;
+    const { stoneId, droppedSymbols, textOnPlate, dateOnPlate, price } =
+      req.body;
 
-    console.log({
-      shirt,
+    const symbols = droppedSymbols.map((droppedSymbol) => ({
+      symbolId: droppedSymbol.symbol._id,
+      position: droppedSymbol.position,
+    }));
+
+    const newProduct = new Product({
+      stone: stoneId,
       symbols,
       textOnPlate,
       dateOnPlate,
-      price
+      price,
     });
 
-    const product = new Product({
-      shirt,
-      symbols,
-      textOnPlate,
-      dateOnPlate,
-      price
-    });
-    await product.save();
-    res.status(201).send(product);
+    await newProduct.save();
+
+    const populatedProduct = await Product.findById(newProduct._id)
+      .populate("stone")
+      .populate({
+        path: "symbols.symbolId",
+        model: "Symbol",
+      });
+
+    res.status(201).send(transformProductWithSymbols(populatedProduct));
   } catch (error) {
-    res.status(400).send(error);
+    res.status(400).send({ message: "Error creating product", error });
   }
 });
 
 // GET endpoint to fetch all products
 router.get("/products", async (req, res) => {
   try {
-    const products = await Product.find({});
-    res.status(200).send(products);
+    const products = await Product.find({}).populate("stone").populate({
+      path: "symbols.symbolId",
+      model: "Symbol",
+    });
+
+    const transformedProducts = products.map(transformProductWithSymbols);
+
+    res.status(200).send(transformedProducts);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).send({ message: "Error fetching products", error });
   }
 });
 
@@ -50,13 +67,21 @@ router.get("/products", async (req, res) => {
 router.get("/product/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const product = await Product.findById(id);
+
+    const product = await Product.findById(id).populate("stone").populate({
+      path: "symbols.symbolId",
+      model: "Symbol",
+      select: "alt type price url",
+    });
+
     if (!product) {
       return res.status(404).send({ message: "Product not found" });
     }
-    res.status(200).send(product);
+
+    res.status(200).send(transformProductWithSymbols(product));
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).send({ message: "Error fetching product", error });
   }
 });
+
 module.exports = router;

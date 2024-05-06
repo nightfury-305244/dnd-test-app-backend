@@ -3,9 +3,9 @@ const symbolReferenceSchema = require("./SymbolReference");
 const Schema = mongoose.Schema;
 
 const productSchema = new Schema({
-  shirt: {
+  stone: {
     type: Schema.Types.ObjectId,
-    ref: "Shirt",
+    ref: "Stone",
     required: true,
   },
   symbols: [symbolReferenceSchema],

@@ -7,14 +7,12 @@ router.post("/order", async (req, res) => {
   const { subscriberInfo, deliveryInfo, productId } = req.body;
 
   try {
-    const product = Product.findById(productId).lean();;
+    const product = Product.findById(productId).lean();
 
-    console.log(productId);
     if (!product) {
       return res.status(400).send({ message: "Failed to create product" });
     }
 
-    console.log("pass");
     const order = new Order({
       subscriberInfo,
       deliveryInfo,
@@ -22,7 +20,7 @@ router.post("/order", async (req, res) => {
     });
     
     await order.save();
-    res.status(201).send({ order });
+    res.status(201).send(order);
   } catch (error) {
     console.error("Order creation failed:", error);
     res.status(500).send({ message: error.message });
