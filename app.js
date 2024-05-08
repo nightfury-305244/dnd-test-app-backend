@@ -6,15 +6,21 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const connectDB = require('./database');
 const cors = require('cors');
+// const upload = require('./middleware/upload');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
-// const importShirts = require('./scripts/importShirts');
-// const importSymbols = require('./scripts/importSymbols');
 
 var app = express();
 
-app.use(cors());
+// app.use(upload);
+app.use('/public', express.static('public'));
+
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
+}));
+
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -28,20 +34,10 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 connectDB();
-// importShirts();
-// importSymbols();
 
 app.use(function(req, res, next) {
   next(createError(404));
 });
-
-const PORT = process.env.PORT || 3001;
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept'],
-  credentials: true
-}));
 
 app.use(function(err, req, res, next) {
   res.locals.message = err.message;
@@ -50,6 +46,5 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-
 
 module.exports = app;

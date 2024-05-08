@@ -1,24 +1,27 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const symbolSchema = new mongoose.Schema({
+  name: {
+    type: String,
+  },
   alt: {
     type: String,
-    required: true
+    required: true,
   },
   type: {
     type: Number,
-    required: true
+    required: true,
   },
   price: {
     type: Number,
-    required: true
+    required: true,
   },
   url: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 });
 
-const Symbol = mongoose.model('Symbol', symbolSchema);
+const Symbol = mongoose.model("Symbol", symbolSchema);
 
 module.exports = Symbol;

@@ -15,6 +15,9 @@ const productSchema = new Schema({
   dateOnPlate: {
     type: String,
   },
+  birthdayOnPlate: {
+    type: String,
+  },
   price: {
     type: Number,
     required: true

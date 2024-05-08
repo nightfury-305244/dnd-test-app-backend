@@ -5,6 +5,9 @@ const stoneSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  description: {
+    type: String
+  },
   alt: {
     type: String,
     required: true,

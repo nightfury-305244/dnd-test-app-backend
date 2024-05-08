@@ -71,7 +71,6 @@ const importSymbols = async () => {
   try {
     await Symbol.deleteMany();
     await Symbol.insertMany(symbols);
-    console.log("Symbols imported successfully!");
     mongoose.connection.close();
   } catch (error) {
     console.error("Error with symbol import", error);

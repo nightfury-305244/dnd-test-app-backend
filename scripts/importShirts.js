@@ -70,7 +70,6 @@ const importShirts = async () => {
   try {
     await Shirt.deleteMany();
     await Shirt.insertMany(shirts);
-    console.log("Data imported successfully!");
     mongoose.connection.close();
   } catch (error) {
     console.error("Error with data import", error);
