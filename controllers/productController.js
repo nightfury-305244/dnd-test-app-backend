@@ -1,4 +1,6 @@
-const product = require("../models/Product");
+const Product = require("../models/Product");
+const Stone = require("../models/Stone");
+const Symbol = require("../models/Symbol");
 
 function transformProductWithSymbols(product) {
   const { symbols, ...rest } = product.toObject();
@@ -13,8 +15,30 @@ function transformProductWithSymbols(product) {
 
 exports.createProduct = async (req, res) => {
   try {
-    const { stoneId, droppedSymbols, textOnPlate, dateOnPlate, price } =
-      req.body;
+    const { stoneId, droppedSymbols, textOnPlate, dateOnPlate, price } = req.body;
+
+    const stone = await Stone.findById(stoneId);
+    if (!stone) {
+      return res.status(404).send({ message: "Stone not found" });
+    }
+    const stonePrice = stone.price;
+
+    let symbolsPrice = 0;
+    const symbolPrices = await Promise.all(
+      droppedSymbols.map(async (droppedSymbol) => {
+        const symbol = await Symbol.findById(droppedSymbol.symbol._id);
+        if (symbol) {
+          return symbol.price;
+        } else {
+          return 0;
+        }
+      })
+    );
+    symbolsPrice = symbolPrices.reduce((acc, curr) => acc + curr, 0);
+
+    if (stonePrice + symbolsPrice !== price) {
+      return res.status(400).send({ message: "Invalid Price" });
+    }
 
     const symbols = droppedSymbols.map((droppedSymbol) => ({
       symbolId: droppedSymbol.symbol._id,
@@ -43,6 +67,7 @@ exports.createProduct = async (req, res) => {
     res.status(400).send({ message: "Error creating product", error });
   }
 };
+
 
 exports.getProducts = async (req, res) => {
   try {
